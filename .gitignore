@@ -1,0 +1,8 @@
+*.o
+*.d
+*.a
+config.h
+config.mak
+config.log
+*.version
+
