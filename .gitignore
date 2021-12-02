@@ -5,4 +5,11 @@ config.h
 config.mak
 config.log
 *.version
-
+DOCS/xml/en/main.xml
+DOCS/xml/html-chunk.xsl
+DOCS/xml/html-single.xsl
+codec-cfg
+codecs.conf.h
+core
+help_mp.h
+version.h
