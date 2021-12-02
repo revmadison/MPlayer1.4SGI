@@ -55,6 +55,7 @@ typedef struct FFFILE {
 #define shcnt(f) ((f)->shcnt + ((f)->rpos - (f)->buf))
 
 // This shouldn't be needed as it SHOULD be a built-in... but not found
+#ifdef MIPSPRO
 static double scalbn(double x, int n)
 {
 	union { double f; uint64_t i;} u;
@@ -83,6 +84,7 @@ static double scalbn(double x, int n)
 	return x;
 
 }
+#endif
 
 static int fftoread(FFFILE *f)
 {

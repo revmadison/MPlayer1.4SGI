@@ -5639,7 +5639,7 @@ int main(int argc, char *argv[]) {
 }
 EOF
   _gl=no
-  for ld_tmp in "" -lGL "-lGL -lGLcore -Wl,--allow-shlib-undefined" "-lGL -lXdamage" "-lGL $ld_pthread" ; do
+  for ld_tmp in "" -lGL "-lGL -lGLcore -Wl,--allow-shlib-undefined -ldmedia -liconv -ldicl-0.1" "-lGL -lXdamage" "-lGL $ld_pthread" ; do
     if test "$_x11" = yes && cc_check $ld_tmp ; then
       _gl=yes
       _gl_x11=yes

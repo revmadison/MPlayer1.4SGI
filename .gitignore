@@ -13,3 +13,5 @@ codecs.conf.h
 core
 help_mp.h
 version.h
+mplayer
+mencoder
