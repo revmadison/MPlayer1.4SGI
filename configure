@@ -617,18 +617,18 @@ exit 0
 # GOTCHA: the variables below defines the default behavior for autodetection
 # and have - unless stated otherwise - at least 2 states : yes no
 # If autodetection is available then the third state is: auto
-_mmx=auto
-_3dnow=auto
-_3dnowext=auto
-_mmxext=auto
-_sse=auto
-_sse2=auto
-_sse3=auto
-_ssse3=auto
-_sse4_1=auto
-_sse4_2=auto
-_avx=auto
-_avx2=auto
+_mmx=no
+_3dnow=no
+_3dnowext=no
+_mmxext=no
+_sse=no
+_sse2=no
+_sse3=no
+_ssse3=no
+_sse4_1=no
+_sse4_2=no
+_avx=no
+_avx2=no
 _avx512=no
 _xop=auto
 _fma3=auto
@@ -636,21 +636,22 @@ _fma4=auto
 _cmov=auto
 _fast_cmov=auto
 _fast_clz=auto
-_armv5te=auto
-_armv6=auto
-_armv6t2=auto
-_armvfp=auto
-vfpv3=auto
+_armv5te=no
+_armv6=no
+_armv6t2=no
+_armvfp=no
+vfpv3=no
 setend=auto
-neon=auto
-armthumb=auto
+neon=no
+armthumb=no
 _iwmmxt=auto
 _mtrr=auto
-_altivec=auto
+_altivec=no
 _install=install
 _ranlib=ranlib
 _windres=windres
-_cc=cc
+#_cc=cc
+_cc=clang
 _ar=ar
 _arflags=rc
 # create thin archive to save disk space and I/O
@@ -675,17 +676,17 @@ _mplayer=yes
 _x11=auto
 _xshape=auto
 _xss=auto
-_dga1=auto
-_dga2=auto
+_dga1=no
+_dga2=no
 _xv=auto
 _xvmc=no  #auto when complete
-_vda=auto
-_vdpau=auto
+_vda=no
+_vdpau=no
 _sdl=auto
-_kva=auto
-_direct3d=auto
-_directx=auto
-_win32waveout=auto
+_kva=no
+_direct3d=no
+_directx=no
+_win32waveout=no
 _nas=auto
 _png=auto
 _mng=auto
@@ -700,22 +701,22 @@ _ggi=auto
 _ggiwmh=auto
 _aa=auto
 _caca=auto
-_svga=auto
-_vesa=auto
-_fbdev=auto
-_dvb=auto
-_dxr2=auto
-_dxr3=auto
-_ivtv=auto
-_v4l2=auto
+_svga=no
+_vesa=no
+_fbdev=no
+_dvb=no
+_dxr2=no
+_dxr3=no
+_ivtv=no
+_v4l2=no
 _iconv=auto
 _langinfo=auto
 _rtc=auto
-_ossaudio=auto
+_ossaudio=no
 _arts=auto
 _esd=auto
 _pulse=auto
-_jack=auto
+_jack=no
 _kai=auto
 _dart=auto
 _openal=auto
@@ -757,7 +758,7 @@ _live=auto
 _nemesi=auto
 _librtmp=auto
 _native_rtsp=yes
-_xinerama=auto
+_xinerama=no
 _mga=auto
 _xmga=auto
 _vm=auto
@@ -774,14 +775,14 @@ _win32dll=auto
 _select=yes
 _radio=no
 _radio_capture=no
-_radio_v4l=auto
-_radio_v4l2=auto
-_radio_bsdbt848=auto
+_radio_v4l=no
+_radio_v4l2=no
+_radio_bsdbt848=no
 _tv=yes
-_tv_v4l1=auto
-_tv_v4l2=auto
-_tv_bsdbt848=auto
-_tv_dshow=auto
+_tv_v4l1=no
+_tv_v4l2=no
+_tv_bsdbt848=no
+_tv_dshow=no
 _pvr=auto
 networking=yes
 _winsock2_h=auto
@@ -2689,10 +2690,8 @@ EOF
             R4000) _march='-mips3' _mcpu='-mtune=r4000' ;;
             R4400) _march='-mips3' _mcpu='-mtune=r4400' ;;
             R4600) _march='-mips3' _mcpu='-mtune=r4600' ;;
-#            R5000) _march='-mips4' _mcpu='-mtune=r5000' ;;
-#            R8000|R10000|R12000|R14000|R16000) _march='-mips4' _mcpu='-mtune=r10000' ;;
-            R5000) _march='-mips4' _mcpu='-r5000' ;;
-            R8000|R10000|R12000|R14000|R16000) _march='-mips4' _mcpu='-r10000' ;;
+            R5000) _march='-mips4' _mcpu='-mtune=r5000' ;;
+            R8000|R10000|R12000|R14000|R16000) _march='-mips4' _mcpu='-mtune=r10000' ;;
         esac
         # gcc < 3.x does not support -mtune.
         if test "$cc_vendor" = "gnu" && test "$_cc_major" -lt 3 ; then
@@ -5639,7 +5638,7 @@ int main(int argc, char *argv[]) {
 }
 EOF
   _gl=no
-  for ld_tmp in "" -lGL "-lGL -lGLcore -Wl,--allow-shlib-undefined -ldmedia -liconv -ldicl-0.1" "-lGL -lXdamage" "-lGL $ld_pthread" ; do
+  for ld_tmp in "" -lGL "-lGL -lGLcore -ldmedia" "-lGL -lXdamage" "-lGL $ld_pthread" ; do
     if test "$_x11" = yes && cc_check $ld_tmp ; then
       _gl=yes
       _gl_x11=yes
@@ -8056,13 +8055,13 @@ else
   echores "no"
 fi
 
-echocheck "linker support for --version-script"
-if cflag_check "-Wl,--version-script,binary.ver" ; then
-  extra_ldflags="-Wl,--version-script,binary.ver $extra_ldflags"
-  echores "yes"
-else
-  echores "no"
-fi
+#echocheck "linker support for --version-script"
+#if cflag_check "-Wl,--version-script,binary.ver" ; then
+#  extra_ldflags="-Wl,--version-script,binary.ver $extra_ldflags"
+#  echores "yes"
+#else
+#  echores "no"
+#fi
 
 
 # Dynamic linking flags

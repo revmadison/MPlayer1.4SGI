@@ -263,6 +263,7 @@ SRCS_COMMON = asxparser.c                       \
               playtree.c                        \
               playtreeparser.c                  \
               subopt-helper.c                   \
+              stpcpy.c                   \
               libaf/af.c                        \
               libaf/af_center.c                 \
               libaf/af_channels.c               \
