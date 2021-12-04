@@ -798,7 +798,6 @@ static int init_context_frame(MpegEncContext *s)
 
     /* which mb is an intra block */
     FF_ALLOCZ_OR_GOTO(s->avctx, s->mbintra_table, mb_array_size, fail);
-    printf("BCS: Allocated mbintra_table as %p for %p\n", s->mbintra_table, s);
     memset(s->mbintra_table, 1, mb_array_size);
 
     /* init macroblock skip table */
@@ -1035,7 +1034,6 @@ static void free_context_frame(MpegEncContext *s)
 
     av_freep(&s->dc_val_base);
     av_freep(&s->coded_block_base);
-    printf("BCS: Freeing mbintra_table at %p for %p\n", s->mbintra_table, s);
     av_freep(&s->mbintra_table);
     av_freep(&s->cbp_table);
     av_freep(&s->pred_dir_table);
