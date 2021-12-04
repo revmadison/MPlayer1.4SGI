@@ -118,6 +118,8 @@ static int skip_frame;
 static int frame_skip_counter;
 static int frame_skip;
 
+static int double_buffer = 1;
+
 static void resize(int *x, int *y){
 	clearcounter = 2;
 
@@ -680,9 +682,11 @@ static int choose_glx_visual(Display *dpy, int scr, XVisualInfo *res_vi)
 		/* of course, the visual must support OpenGL rendering... */
 		res = glXGetConfig(dpy, vi_list + i, GLX_USE_GL, &val);
 		if (res || val == False) continue;
-		/* also it must be doublebuffered ... */
+		/* also it must be doublebuffered (unless requested otherwise)... */
 		res = glXGetConfig(dpy, vi_list + i, GLX_DOUBLEBUFFER, &val);
-		if (res || val == False) continue;
+		if (res) continue;
+		if (double_buffer && (val == False)) continue;
+		if (!double_buffer && (val == True)) continue;
 		/* furthermore it must be RGBA (not color indexed) ... */
 		res = glXGetConfig(dpy, vi_list + i, GLX_RGBA, &val);
 		if (res || val == False) continue;
@@ -1916,6 +1920,9 @@ static int preinit(const char *arg)
 			} else if (strncmp (parse_pos, "ycrcb", 5) == 0) {
 				parse_pos = &parse_pos[5];
 				force_ycrcb=1;
+			} else if (strncmp (parse_pos, "nodouble", 8) == 0) {
+				parse_pos = &parse_pos[8];
+				double_buffer=0;
 			} else if (strncmp (parse_pos, "rgba", 4) == 0) {
 				parse_pos = &parse_pos[4];
 				force_rgba = 1;
@@ -1947,6 +1954,7 @@ static int preinit(const char *arg)
             	"\noptions accepted by vo_sgi are:\n\n"
             	"\ttextures:	force drawing via textures\n"
 				"\tdrawpixels:	force drawing via glDrawPixels\n"
+				"\tnodouble:	force single buffered visual\n"
 				"\tsoftcs:		force Software colorspace conversion\n"
 				"\tpixeltex:	force SGIX/SGIS_pixel_texture colorspace conversion (Impact/VPRO only)\n"
 				"\tcolormatrix:	force SGI_color_matrix for hardware colorspace conversion\n"
