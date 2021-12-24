@@ -123,8 +123,7 @@ static int double_buffer = 1;
 static void resize(int *x, int *y){
 	clearcounter = 2;
 
-	if( vo_fs )
-	{
+	if(vo_fs) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		aspect(x, y, A_ZOOM);
 		panscan_calc();
@@ -133,11 +132,12 @@ static void resize(int *x, int *y){
 		glViewport((vo_screenwidth-*x)/2, (vo_screenheight-*y)/2, *x, *y);
 	} else {
 		if (WinID >= 0) {
-	  	int top = 0, left = 0, w = *x, h = *y;
-	  	geometry(&top, &left, &w, &h, vo_screenwidth, vo_screenheight);
-	  	glViewport(top, left, w, h);
-	} else
-		glViewport( 0, 0, *x, *y );
+			int top = 0, left = 0, w = *x, h = *y;
+			geometry(&top, &left, &w, &h, vo_screenwidth, vo_screenheight);
+			glViewport(top, left, w, h);
+		} else {
+			glViewport( 0, 0, *x, *y );
+		}
 	}
 
 	glMatrixMode(GL_PROJECTION);
@@ -170,11 +170,9 @@ static void resetTexturePointers(unsigned char *imageSource)
 
 	line_start = (unsigned char *) imageSource;
 
-	for (y = 0; y < texnumy; y++)
-	{
+	for(y = 0; y < texnumy; y++) {
 		texdata_start = line_start;
-		for (x = 0; x < texnumx; x++)
-		{
+		for(x = 0; x < texnumx; x++) {
 			tsq->texture = texdata_start;
 			texdata_start += texture_width * image_bytes;
 			tsq++;
@@ -191,27 +189,26 @@ static void setupTextureDirtyArea(int x, int y, int w,int h)
     
 	wdecr=w; hdecr=h; xh=x; yh=y;
 
-	for (yi = 0; hdecr>0 && yi < texnumy; yi++)
-	{
-		if (yi < texnumy - 1)
+	for(yi = 0; hdecr>0 && yi < texnumy; yi++) {
+		if(yi < texnumy - 1) {
 			ht = texture_height;
-		else
+		} else {
 			ht = image_height - texture_height * yi;
+		}
 
 		xh =x;
 		wdecr =w;
 
-		for (xi = 0; wdecr>0 && xi < texnumx; xi++)
-		{
+		for(xi = 0; wdecr>0 && xi < texnumx; xi++) {
 			square = texgrid + yi * texnumx + xi;
 
-			if (xi < texnumx - 1)
+			if (xi < texnumx - 1) {
 				wd = texture_width;
-			else
+			} else {
 				wd = image_width - texture_width * xi;
+			}
 
-			if( 0 <= xh && xh < wd && 0 <= yh && yh < ht )
-			{
+			if(0 <= xh && xh < wd && 0 <= yh && yh < ht) {
 				square->isDirty=GL_TRUE;
 
 				wh=(wdecr<wd)?wdecr:wd-xh;
@@ -231,8 +228,9 @@ static void setupTextureDirtyArea(int x, int y, int w,int h)
 		
 				wdecr-=wh;
 
-				if ( xi == texnumx - 1 )
+				if(xi == texnumx - 1) {
 					hdecr-=hh;
+				}
 			}
 
 			xh-=wd;
@@ -245,49 +243,43 @@ static void setupTextureDirtyArea(int x, int y, int w,int h)
 static void draw_textures ()
 {
 	struct TexSquare *square = texgrid;
-	int x, y/*, xoff=0, yoff=0, wd, ht*/;
+	int x, y;
 	GLenum err;
 
 	glColor3f(1.0,1.0,1.0);
 
-	for (y = 0; y < texnumy; y++)
-	{
-		for (x = 0; x < texnumx; x++)
-		{
-			if(square->isTexture==GL_FALSE)
-			{
+	for(y = 0; y < texnumy; y++) {
+		for(x = 0; x < texnumx; x++) {
+			if(square->isTexture==GL_FALSE) {
 				continue;
 			}
 
 			glBindTexture (GL_TEXTURE_2D, square->texobj);
 			err = glGetError ();
-			if(err==GL_INVALID_ENUM)
-			{
+			if(err==GL_INVALID_ENUM) {
 				mp_msg (MSGT_VO, MSGL_ERR, "GLERROR glBindTexture := GL_INVALID_ENUM, texnum x=%d, y=%d, texture=%d\n", x, y, square->texobj);
 			} else if(err==GL_INVALID_OPERATION) {
 				mp_msg (MSGT_VO, MSGL_V, "GLERROR glBindTexture := GL_INVALID_OPERATION, texnum x=%d, y=%d, texture=%d\n", x, y, square->texobj);
 			}
 
-			if(glIsTexture(square->texobj) == GL_FALSE)
-			{
+			if(glIsTexture(square->texobj) == GL_FALSE) {
 				square->isTexture=GL_FALSE;
 				mp_msg (MSGT_VO, MSGL_ERR, "GLERROR ain't a texture(update): texnum x=%d, y=%d, texture=%d\n",
 					x, y, square->texobj);
 			}
 
-			if(square->isDirty)
-			{
-				if(use_rgba){
+			if(square->isDirty) {
+				if(use_rgba) {
 					glTexSubImage2D (GL_TEXTURE_2D, 0, 
 						square->dirtyXoff, square->dirtyYoff,
 						square->dirtyWidth, square->dirtyHeight,
 						GL_RGBA, GL_UNSIGNED_BYTE, square->texture);
-				} else if(use_rgb){
+				} else if(use_rgb) {
 					glTexSubImage2D (GL_TEXTURE_2D, 0, 
 						square->dirtyXoff, square->dirtyYoff,
 						square->dirtyWidth, square->dirtyHeight,
 						GL_RGB, GL_UNSIGNED_BYTE, square->texture);
-				} else if(use_abgr){
+				} else if(use_abgr) {
 					glTexSubImage2D (GL_TEXTURE_2D, 0, 
 						square->dirtyXoff, square->dirtyYoff,
 						square->dirtyWidth, square->dirtyHeight,
@@ -329,13 +321,13 @@ static int setup_textures(uint32_t d_width, uint32_t d_height)
 	GLint format=0;
 	GLenum err;
 
-	if(use_rgb){
+	if(use_rgb) {
 		gl_internal_format = gl_bitmap_format = GL_RGB;
 		image_bytes = 3;
-	} else if(use_rgba){
+	} else if(use_rgba) {
 		gl_internal_format = gl_bitmap_format = GL_RGBA;
 		image_bytes = 4;
-        } else if(use_abgr){
+        } else if(use_abgr) {
                 gl_internal_format = GL_RGBA;
                 gl_bitmap_format = GL_ABGR_EXT;
                 image_bytes = 4;
@@ -360,8 +352,7 @@ static int setup_textures(uint32_t d_width, uint32_t d_height)
 	texture_height=s;
 
 	/* Test the max texture size */
-	do
-	{
+	do {
 		glTexImage2D (GL_PROXY_TEXTURE_2D, 0,
 			gl_internal_format,
 			texture_width, texture_height,
@@ -369,20 +360,16 @@ static int setup_textures(uint32_t d_width, uint32_t d_height)
 
 		glGetTexLevelParameteriv(GL_PROXY_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &format);
 
-		if (format != gl_internal_format)
-		{
+		if(format != gl_internal_format) {
 			mp_msg (MSGT_VO, MSGL_V, "[sgi] Needed texture [%dx%d] too big, trying ",
 				texture_height, texture_width);
 
-			if (texture_width > texture_height)
-			{
+			if(texture_width > texture_height) {
 				e_x--;
 				texture_width = 1;
 				for (i = e_x; i > 0; i--)
 					texture_width *= 2;
-			}
-			else
-			{
+			} else {
 				e_y--;
 				texture_height = 1;
 				for (i = e_y; i > 0; i--)
@@ -391,8 +378,7 @@ static int setup_textures(uint32_t d_width, uint32_t d_height)
 
 			mp_msg (MSGT_VO, MSGL_V, "[%dx%d] !\n", texture_height, texture_width);
 
-			if(texture_width < 64 || texture_height < 64)
-			{
+			if(texture_width < 64 || texture_height < 64) {
 				mp_msg (MSGT_VO, MSGL_FATAL, "[sgi] Unable to initialize textures !\n");
 				return -1;
 			}
@@ -428,10 +414,8 @@ static int setup_textures(uint32_t d_width, uint32_t d_height)
 		(int) texnumx, (int) texture_width, (int) texnumy,
 		(int) texture_height);
 
-	for (y = 0; y < texnumy; y++)
-	{
-		for (x = 0; x < texnumx; x++)
-		{
+	for(y = 0; y < texnumy; y++) {
+		for(x = 0; x < texnumx; x++) {
 			tsq = texgrid + y * texnumx + x;
 
 			if (x == texnumx - 1 && image_width % texture_width)
@@ -472,13 +456,11 @@ static int setup_textures(uint32_t d_width, uint32_t d_height)
 
 			glBindTexture (GL_TEXTURE_2D, tsq->texobj);
 			err = glGetError ();
-			if(err==GL_INVALID_ENUM)
-			{
+			if(err==GL_INVALID_ENUM) {
 				mp_msg (MSGT_VO, MSGL_ERR, "GLERROR glBindTexture (glGenText) := GL_INVALID_ENUM, texnum x=%d, y=%d, texture=%d\n", x, y, tsq->texobj);
 			} 
 
-			if(glIsTexture(tsq->texobj) == GL_FALSE)
-			{
+			if(glIsTexture(tsq->texobj) == GL_FALSE) {
 				mp_msg (MSGT_VO, MSGL_ERR, "GLERROR ain't a texture (glGenText): texnum x=%d, y=%d, texture=%d\n",
 					x, y, tsq->texobj);
 			} else {
@@ -561,7 +543,7 @@ static void setup_softcs(void)
 	cgv= (cgv*contrast * saturation)>>32;
 	oy -= 256*brightness;
 
-	for (i = 0; i < 1024; i++) {
+	for(i = 0; i < 1024; i++) {
 		int j;
 
 		j= (cy*(((i - 384)<<16) - oy) + (1<<31))>>32;
@@ -574,10 +556,11 @@ static void setup_softcs(void)
 	entry_size = sizeof (uint8_t);
 	table_r = table_g = table_b = table_8 + 232;
 
-	for (i = -232; i < 256+232; i++)
+	for(i = -232; i < 256+232; i++) {
 		((uint8_t * )table_b)[i] = table_Y[i+384];
+	}
 
-	for (i = 0; i < 256; i++) {
+	for(i = 0; i < 256; i++) {
 		table_rV[i] = (char*)table_r + entry_size * div_round (crv * (i-128), 76309);
 		table_gU[i] = (char*)table_g + entry_size * div_round (cgu * (i-128), 76309);
 		table_gV[i] = entry_size * div_round (cgv * (i-128), 76309);
@@ -595,8 +578,8 @@ static void setup_colormatrix(int format)
                                        1.403, -0.714,  0.000,  0.000, 
                                        0.000,  0.000,  0.000,  1.000}; 
 
-		if (use_abgr){
-			for (int i=0;i<4;i++){
+		if(use_abgr) {
+			for(int i = 0; i < 4; i++) {
 				GLfloat tmp;
 				tmp=yuv2rgb[i];
 				yuv2rgb[i]=yuv2rgb[12+i];
@@ -606,7 +589,7 @@ static void setup_colormatrix(int format)
 				yuv2rgb[8+i]=tmp;
 			}
 		}
-		if(format == IMGFMT_YV12){
+		if(format == IMGFMT_YV12) {
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_DEPTH_TEST);
 			glDisable(GL_BLEND);
@@ -635,9 +618,9 @@ static void setup_colormatrix(int format)
 static void setup_pixeltex(void)
 {
 		float ptg[16][16][16][4];
-		for(int z = 0; z < 16; z++){
-			for(int y = 0; y < 16; y++){
-				for(int x = 0; x < 16; x++){
+		for(int z = 0; z < 16; z++) {
+			for(int y = 0; y < 16; y++) {
+				for(int x = 0; x < 16; x++) {
 					float tx = ((float)x)/15.0f; if(tx > 0.9375f) tx = 0.9375f;
 					float ty = ((float)y)/15.0f;
 					float tz = ((float)z)/15.0f;
@@ -662,84 +645,27 @@ static void setup_pixeltex(void)
 		glTexParameteri (GL_TEXTURE_3D_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glEnable(GL_TEXTURE_3D_EXT);
 
-		if(hw_detected == HW_MGRAS)
+		if(hw_detected == HW_MGRAS) {
 			glEnable(GL_PIXEL_TEX_GEN_SGIX);
-		else if(hw_detected == HW_VPRO)
+		} else if(hw_detected == HW_VPRO) {
 			glEnable(GL_PIXEL_TEXTURE_SGIS);
-}
-
-static int choose_glx_visual(Display *dpy, int scr, XVisualInfo *res_vi)
-{
-	XVisualInfo template, *vi_list;
-	int vi_num, i, best_i, best_weight;
-	
-	template.screen = scr;
-	vi_list = XGetVisualInfo(dpy, VisualScreenMask, &template, &vi_num);
-	if (!vi_list) return -1;
-	best_weight = 1000000; best_i=0;
-	for (i = 0; i < vi_num; i++) {
-		int val, res, w = 0;
-		/* of course, the visual must support OpenGL rendering... */
-		res = glXGetConfig(dpy, vi_list + i, GLX_USE_GL, &val);
-		if (res || val == False) continue;
-		/* also it must be doublebuffered (unless requested otherwise)... */
-		res = glXGetConfig(dpy, vi_list + i, GLX_DOUBLEBUFFER, &val);
-		if (res) continue;
-		if (double_buffer && (val == False)) continue;
-		if (!double_buffer && (val == True)) continue;
-		/* furthermore it must be RGBA (not color indexed) ... */
-		res = glXGetConfig(dpy, vi_list + i, GLX_RGBA, &val);
-		if (res || val == False) continue;
-		/* prefer less depth buffer size, */
-		res = glXGetConfig(dpy, vi_list + i, GLX_DEPTH_SIZE, &val);
-		if (res) continue;
-		w += val*2;
-		/* stencil buffer size */
-		res = glXGetConfig(dpy, vi_list + i, GLX_STENCIL_SIZE, &val);
-		if (res) continue;
-		w += val*2;
-		/* and colorbuffer alpha size */
-		res = glXGetConfig(dpy, vi_list + i, GLX_ALPHA_SIZE, &val);
-		if (res) continue;
-		w += val;
-		/* and finally, prefer DirectColor-ed visuals to allow color corrections */
-		if (vi_list[i].class != DirectColor) w += 100;
-
-		// avoid bad-looking visual with less that 8bit per color
-		res = glXGetConfig(dpy, vi_list + i, GLX_RED_SIZE, &val);
-		if (res) continue;
-		if (val < 8) w += 50;
-		res = glXGetConfig(dpy, vi_list + i, GLX_GREEN_SIZE, &val);
-		if (res) continue;
-		if (val < 8) w += 70;
-		res = glXGetConfig(dpy, vi_list + i, GLX_BLUE_SIZE, &val);
-		if (res) continue;
-		if (val < 8) w += 50;
-
-		if (w < best_weight) {
-			best_weight = w;
-			best_i = i;
 		}
-	}
-	if (best_weight < 1000000) *res_vi = vi_list[best_i];
-	XFree(vi_list);
-	return (best_weight < 1000000) ? 0 : -1;
 }
 
-static int config_glx(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uint32_t flags, char *title, uint32_t format) {
-  if (WinID >= 0) {
-    vo_window = WinID ? (Window)WinID : mRootWin;
-    vo_x11_selectinput_witherr(mDisplay, vo_window,
+static int config_glx(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uint32_t flags, char *title, uint32_t format)
+{
+	if(WinID >= 0) {
+		vo_window = WinID ? (Window)WinID : mRootWin;
+		vo_x11_selectinput_witherr(mDisplay, vo_window,
              StructureNotifyMask | KeyPressMask | PointerMotionMask |
              ButtonPressMask | ButtonReleaseMask | ExposureMask);
-    return 0;
-  }
-  if ( vo_window == None ) 
-  {
-	XSizeHints hint;
-	XVisualInfo *vinfo, vinfo_buf;
-	Colormap cmap;
-	XEvent xev;
+		return 0;
+	}
+	if(vo_window == None) {
+		XSizeHints hint;
+		XVisualInfo *vinfo, vinfo_buf;
+		Colormap cmap;
+		XEvent xev;
 
 		hint.x = vo_dx;
 		hint.y = vo_dy;
@@ -747,59 +673,109 @@ static int config_glx(uint32_t width, uint32_t height, uint32_t d_width, uint32_
 		hint.height = d_height;
 		hint.flags = PPosition | PSize;
 
-	/* Make the window */
+		/* Make the window */
+		int attrListDouble[] = {
+			GLX_RGBA,
+			GLX_DOUBLEBUFFER,
+			GLX_RED_SIZE, 8,
+			GLX_BLUE_SIZE, 8,
+			GLX_GREEN_SIZE, 8,
+			GLX_DEPTH_SIZE, 0,
+			GLX_STENCIL_SIZE, 0,
+			GLX_ALPHA_SIZE, 0,
+			None
+		};
+		int backupAttrListDouble[] = {
+			GLX_RGBA,
+			GLX_DOUBLEBUFFER,
+			GLX_RED_SIZE, 1,
+			GLX_BLUE_SIZE, 1,
+			GLX_GREEN_SIZE, 1,
+			GLX_DEPTH_SIZE, 0,
+			GLX_STENCIL_SIZE, 0,
+			GLX_ALPHA_SIZE, 0,
+			None
+		};		
+		int attrListSingle[] = {
+			GLX_RGBA,
+			GLX_RED_SIZE, 8,
+			GLX_BLUE_SIZE, 8,
+			GLX_GREEN_SIZE, 8,
+			GLX_DEPTH_SIZE, 0,
+			GLX_STENCIL_SIZE, 0,
+			GLX_ALPHA_SIZE, 0,
+			None
+		};
+		int backupAttrListSingle[] = {
+			GLX_RGBA,
+			GLX_RED_SIZE, 1,
+			GLX_BLUE_SIZE, 1,
+			GLX_GREEN_SIZE, 1,
+			GLX_DEPTH_SIZE, 0,
+			GLX_STENCIL_SIZE, 0,
+			GLX_ALPHA_SIZE, 0,
+			None
+		};		
 
-//	XGetWindowAttributes(mDisplay, DefaultRootWindow(mDisplay), &attribs);
+		if(double_buffer) {
+			vinfo = glXChooseVisual(mDisplay, mScreen, attrListDouble);
+			if(vinfo == NULL) {
+				vinfo = glXChooseVisual(mDisplay, mScreen, backupAttrListDouble);
+			}
+		} else {
+			vinfo = glXChooseVisual(mDisplay, mScreen, attrListSingle);
+			if(vinfo == NULL) {
+				vinfo = glXChooseVisual(mDisplay, mScreen, backupAttrListSingle);
+			}
+		}
+		if(vinfo == NULL) {
+			mp_msg(MSGT_VO, MSGL_FATAL, "[sgi] no GLX support present\n");
+			return -1;
+		}
+		{
+			char vomsgbuf[128];
+			sprintf(vomsgbuf, "[sgi] Chose visual 0x%X with depth %d\n", (int)vinfo->visualid, vinfo->depth);
+			mp_msg(MSGT_VO, MSGL_INFO, vomsgbuf);
+		}
 
-//	XMatchVisualInfo(mDisplay, screen, depth, TrueColor, &vinfo);
-  vinfo = choose_glx_visual(mDisplay,mScreen,&vinfo_buf) < 0 ? NULL : &vinfo_buf;
-  if (vinfo == NULL)
-  {
-    mp_msg(MSGT_VO, MSGL_FATAL, "[sgi] no GLX support present\n");
-    return -1;
-  }
+		vo_fs = VO_FALSE;
+		cmap = vo_x11_create_colormap(vinfo);
+		vo_window = vo_x11_create_smooth_window(mDisplay, RootWindow(mDisplay,mScreen), 
+			vinfo->visual, hint.x, hint.y, hint.width, hint.height, vinfo->depth, cmap);
 
-    vo_fs = VO_FALSE;
-	cmap = vo_x11_create_colormap(vinfo);
-    vo_window = vo_x11_create_smooth_window(mDisplay, RootWindow(mDisplay,mScreen), 
-		                            vinfo->visual, hint.x, hint.y, hint.width, hint.height, vinfo->depth, cmap);
+		XSelectInput(mDisplay, vo_window, StructureNotifyMask);
 
-	XSelectInput(mDisplay, vo_window, StructureNotifyMask);
+		/* Tell other applications about this window */
+		XSetStandardProperties(mDisplay, vo_window, title, title, None, NULL, 0, &hint);
 
-	/* Tell other applications about this window */
+		/* Map window. */
+		XMapWindow(mDisplay, vo_window);
+		vo_x11_sizehint( hint.x, hint.y, hint.width, hint.height,0 );
+		XClearWindow(mDisplay,vo_window);
 
-	XSetStandardProperties(mDisplay, vo_window, title, title, None, NULL, 0, &hint);
+		/* Wait for map. */
+		do {
+			XNextEvent(mDisplay, &xev);
+		} while (xev.type != MapNotify || xev.xmap.event != vo_window);
 
-	/* Map window. */
-	XMapWindow(mDisplay, vo_window);
-	vo_x11_sizehint( hint.x, hint.y, hint.width, hint.height,0 );
-        XClearWindow(mDisplay,vo_window);
-
-	/* Wait for map. */
-	do 
-	{
-		XNextEvent(mDisplay, &xev);
-	}
-	while (xev.type != MapNotify || xev.xmap.event != vo_window);
-
-	vo_x11_classhint( mDisplay,vo_window,"sgi" );
-	//vo_hidecursor(mDisplay,vo_window);
+		vo_x11_classhint( mDisplay,vo_window,"sgi" );
+		//vo_hidecursor(mDisplay,vo_window);
   
-	XSync(mDisplay, False);
+		XSync(mDisplay, False);
 
-	//XSelectInput(mDisplay, vo_window, StructureNotifyMask); // !!!!
-        vo_x11_selectinput_witherr(mDisplay, vo_window, StructureNotifyMask | KeyPressMask | PointerMotionMask
-		 | ButtonPressMask | ButtonReleaseMask | ExposureMask
-        );
-  }
-  vo_x11_nofs_sizepos(vo_dx, vo_dy, d_width, d_height);
-  if (vo_fs ^ (flags & VOFLAG_FULLSCREEN))
-    vo_x11_fullscreen();
+        vo_x11_selectinput_witherr(mDisplay, vo_window, StructureNotifyMask | KeyPressMask | 
+			PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask);
+	}
+	vo_x11_nofs_sizepos(vo_dx, vo_dy, d_width, d_height);
+	if(vo_fs ^ (flags & VOFLAG_FULLSCREEN)) {
+		vo_x11_fullscreen();
+	}
 
-        return 0;
+	return 0;
 }
 
-static void check_dcd(void) {
+static void check_dcd(void)
+{
 	inventory_t *invp;
 	setinvent();
 	while (invp = getinvent()) { 
@@ -811,8 +787,8 @@ static void check_dcd(void) {
 	}
 }
 
-static void config_render_path(uint32_t format) {
-
+static void config_render_path(uint32_t format)
+{
 	char *renderer, *extension;
 
 	use_ycrcb = use_colormatrix = use_drawpixels = use_textures = 0;
@@ -1077,50 +1053,52 @@ static void config_render_path(uint32_t format) {
 			use_rgb = use_rgba = 0;
 		}
 
-	} else if(strstr(renderer, "NEWPORT") || strstr(renderer, "LIGHT")){
+	} else if(strstr(renderer, "NEWPORT") || strstr(renderer, "LIGHT")) {
 		mp_msg(MSGT_VO, MSGL_INFO, "[sgi] Newport (Entry) Hardware detected:\n");
 		hw_detected = HW_ENTRY;
 
 		// Setup defaults
+		double_buffer = 0;
 		use_drawpixels = 1;
 		if(format == IMGFMT_YV12)
 			use_softcs = 1;
 
 		extension = (char *)glGetString(GL_EXTENSIONS);
 
-   		if (strstr(extension, "EXT_abgr")){
+   		if (strstr(extension, "EXT_abgr")) {
 			mp_msg(MSGT_VO, MSGL_INFO, "ABGR pixel order selected\n");
 			use_abgr = 1;
       	} else {
 			use_rgb = 1;
 		}
 
-		if(force_textures){
+		if(force_textures) {
 			use_textures = 1; 
 			use_drawpixels = 0;
 		}
 
-		if(force_colormatrix){
+		if(force_colormatrix) {
 			use_colormatrix = 1;
 			use_softcs = 0;
 		}
 
-		if(force_rgba){
+		if(force_rgba) {
 			use_abgr = 0;
 			use_rgb = 0;
 			use_rgba = 1;
 		}
-		if(force_rgb){
+		if(force_rgb) {
 			use_abgr = 0;
 			use_rgb = 1;
 			use_rgba = 0;
 		}
 
-	} else if(strstr(renderer, "-XS") || strstr(renderer, "-XZ") || strstr(renderer, "-Elan") || strstr(renderer, "-Extreme")){
+	} else if(strstr(renderer, "-XS") || strstr(renderer, "-XZ") || strstr(renderer, "-Elan") || strstr(renderer, "-Extreme")) {
 		mp_msg(MSGT_VO, MSGL_INFO, "[sgi] GR2/GR3/GU1 (Express) Hardware detected:\n");
 		hw_detected = HW_EXPRESS;
 
 		// Setup defaults
+		double_buffer = 0;
 		use_drawpixels = 1;
 		if(format == IMGFMT_YV12)
 			use_softcs = 1;
@@ -1216,72 +1194,70 @@ static XVisualInfo *getWindowVisualInfo(Window win) {
   vinfo_template.visualid = XVisualIDFromVisual(xw_attr.visual);
   return XGetVisualInfo(mDisplay, VisualIDMask, &vinfo_template, &tmp);
 }
+
 static int setGlWindow(XVisualInfo **vinfo, GLXContext *context, Window win)
 {
-  XVisualInfo *new_vinfo;
-  GLXContext new_context = NULL;
-  int keep_context = 0;
+	XVisualInfo *new_vinfo;
+	GLXContext new_context = NULL;
+	int keep_context = 0;
 
-  // should only be needed when keeping context, but not doing glFinish
-  // can cause flickering even when we do not keep it.
-  if (*context)
-  glFinish();
-  new_vinfo = getWindowVisualInfo(win);
-  if (*context && *vinfo && new_vinfo &&
-      (*vinfo)->visualid == new_vinfo->visualid) {
-      // we can keep the GLXContext
-      new_context = *context;
-      XFree(new_vinfo);
-      new_vinfo = *vinfo;
-      keep_context = 1;
-  } else {
-    // create a context
-    new_context = glXCreateContext(mDisplay, new_vinfo, NULL, True);
-    if (!new_context) {
-      mp_msg(MSGT_VO, MSGL_FATAL, "[gl] Could not create GLX context!\n");
-      XFree(new_vinfo);
-      return 1;
-    }
-  }
+	// should only be needed when keeping context, but not doing glFinish
+	// can cause flickering even when we do not keep it.
+	if(*context) {
+		glFinish();
+	}
 
-  // set context
-  if (!glXMakeCurrent(mDisplay, vo_window, new_context)) {
-    mp_msg (MSGT_VO, MSGL_FATAL, "[gl] Could not set GLX context!\n");
-    if (!keep_context) {
-      glXDestroyContext (mDisplay, new_context);
-      XFree(new_vinfo);
-    }
-    return 1;
-  }
+	new_vinfo = getWindowVisualInfo(win);
+	if(*context && *vinfo && new_vinfo && 
+			(*vinfo)->visualid == new_vinfo->visualid) {
+		// we can keep the GLXContext
+		new_context = *context;
+		XFree(new_vinfo);
+		new_vinfo = *vinfo;
+		keep_context = 1;
+	} else {
+		// create a context
+		new_context = glXCreateContext(mDisplay, new_vinfo, NULL, True);
+		if(!new_context) {
+			mp_msg(MSGT_VO, MSGL_FATAL, "[gl] Could not create GLX context!\n");
+			XFree(new_vinfo);
+			return 1;
+		}
+	}
 
-  // set new values
-  vo_window = win;
-  {
-    Window root;
-    int tmp;
-    unsigned utmp;
-    XGetGeometry(mDisplay, vo_window, &root, &tmp, &tmp,
-        (unsigned *)&vo_dwidth, (unsigned *)&vo_dheight, &utmp, &utmp);
-  }
-  if (!keep_context) {
-    void *(*getProcAddress)(const GLubyte *);
-    const char *(*glXExtStr)(Display *, int);
+	// set context
+	if(!glXMakeCurrent(mDisplay, vo_window, new_context)) {
+		mp_msg (MSGT_VO, MSGL_FATAL, "[gl] Could not set GLX context!\n");
+		if(!keep_context) {
+			glXDestroyContext (mDisplay, new_context);
+			XFree(new_vinfo);
+		}
+		return 1;
+	}
 
-    if (*context)
-      glXDestroyContext(mDisplay, *context);
-    *context = new_context;
+	// set new values
+	vo_window = win;
+	{
+		Window root;
+		int tmp;
+		unsigned utmp;
+		XGetGeometry(mDisplay, vo_window, &root, &tmp, &tmp,
+			(unsigned *)&vo_dwidth, (unsigned *)&vo_dheight, &utmp, &utmp);
+	}
+	if(!keep_context) {
+		void *(*getProcAddress)(const GLubyte *);
+		const char *(*glXExtStr)(Display *, int);
 
-    // and inform that reinit is neccessary
-    return 1;
-  }
-  return 0;
+		if(*context) {
+			glXDestroyContext(mDisplay, *context);
+		}
+		*context = new_context;
+
+		// and inform that reinit is neccessary
+		return 1;
+	}
+	return 0;
 }
-
-
-
-
-
-
 
 static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_height, uint32_t flags, char *title, uint32_t format)
 {
@@ -1290,9 +1266,10 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 	image_format = format;
 	paused = 0;
 	check_dcd();
-	if (has_dcd) {
-		if (vo_screenwidth >= vo_screenheight/3*8)
+	if(has_dcd) {
+		if(vo_screenwidth >= vo_screenheight/3*8) {
 			vo_screenwidth = vo_screenwidth/2;
+		}
 	}
 	
 	panscan_init();
@@ -1309,7 +1286,7 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 	          vo_screenwidth, vo_screenheight);
 
 	#if defined(HAVE_NEW_GUI)
-	if (use_gui) {
+	if(use_gui) {
 	  if (config_glx_gui(d_width, d_height) == -1)
 	    return -1;
 	} else
@@ -1326,19 +1303,19 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 	glDepthMask(GL_FALSE);
 	glDisable(GL_CULL_FACE);
 
-	if(use_colormatrix){
+	if(use_colormatrix) {
 		setup_colormatrix(format);
-	} else if(use_pixeltex){
+	} else if(use_pixeltex) {
 		if(!use_rendertotex) setup_pixeltex();
-	} else if(use_softcs){
+	} else if(use_softcs) {
 		setup_softcs();
 	}
 
-	if(use_textures){
+	if(use_textures) {
 		glEnable(GL_TEXTURE_2D);
 		setup_textures(d_width, d_height);
 
-		if(use_ycrcb && use_rgba){	//O2 magic
+		if(use_ycrcb && use_rgba) {	//O2 magic
 			int configcount;
 			int fbAttrs[] = {GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT,
 				GLX_DOUBLEBUFFER, False, GLX_RED_SIZE, 8,
@@ -1395,7 +1372,7 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 	}
 	glColor3f(1.0f,1.0f,1.0f);
 
-	if(use_pixeltex && use_rendertotex){
+	if(use_pixeltex && use_rendertotex) {
 		int configcount;
 		int fbAttrs[] = {GLX_DRAWABLE_TYPE, GLX_PBUFFER_BIT,
 			GLX_DOUBLEBUFFER, False, GLX_RED_SIZE, 8,
@@ -1427,7 +1404,7 @@ static int config(uint32_t width, uint32_t height, uint32_t d_width, uint32_t d_
 		glXMakeCurrent( mDisplay,vo_window,gl_context );
 	}
 	imagedata = 0;
-	if(format == IMGFMT_YV12){
+	if(format == IMGFMT_YV12) {
 		if(use_ycrcb) imagedata = (uint8_t *)malloc(image_width*(image_height+1)*2);
 		else if(use_rgb) imagedata = (uint8_t *)malloc(image_width*(image_height+1)*3);
 		else imagedata = (uint8_t *)malloc(image_width*(image_height+1)*4);
@@ -1453,16 +1430,13 @@ static void gl_set_antialias (int val)
 {
   gl_antialias=val;
 
-  if (gl_antialias)
-  {
+  if(gl_antialias) {
     glShadeModel (GL_SMOOTH);
     glEnable (GL_POLYGON_SMOOTH);
     glEnable (GL_LINE_SMOOTH);
     glEnable (GL_POINT_SMOOTH);
     mp_msg(MSGT_VO, MSGL_INFO, "[sgi] antialiasing on\n");
-  }
-  else
-  {
+  } else {
     glShadeModel (GL_FLAT);
     glDisable (GL_POLYGON_SMOOTH);
     glDisable (GL_LINE_SMOOTH);
@@ -1473,8 +1447,7 @@ static void gl_set_antialias (int val)
 
 static int gl_handlekey(int key)
 {
-	if(key=='a'||key=='A')
-	{
+	if(key=='a'||key=='A') {
 		gl_set_antialias(!gl_antialias);
 		return 0;
 	}
@@ -1484,51 +1457,51 @@ static int gl_handlekey(int key)
 static void check_events(void)
 {
 	XEvent         Event;
-	 char           buf[100];
-	 KeySym         keySym;
-	 int            key;
-	 static XComposeStatus stat;
+	char           buf[100];
+	KeySym         keySym;
+	int            key;
+	static XComposeStatus stat;
          
-	 while ( XPending( mDisplay ) )
-	 {
-	      XNextEvent( mDisplay,&Event );
-	      if( Event.type == KeyPress )
-	      {
-
-		       XLookupString( &Event.xkey,buf,sizeof(buf),&keySym,&stat );
-		       key = (keySym&0xff00) != 0? ( (keySym&0x00ff) + 256 ) 
+	while( XPending( mDisplay ) ) {
+		XNextEvent( mDisplay,&Event );
+		if( Event.type == KeyPress ) {
+			XLookupString( &Event.xkey,buf,sizeof(buf),&keySym,&stat );
+			key = (keySym&0xff00) != 0? ( (keySym&0x00ff) + 256 ) 
 		                                 : ( keySym ) ;
-		       if(gl_handlekey(key))
-			       XPutBackEvent(mDisplay, &Event);
-		       break;
-	      } else {
-	      	       XPutBackEvent(mDisplay, &Event);
-	               break;
-	      }
-     }
-    int e=vo_x11_check_events(mDisplay);
-    if(e&VO_EVENT_RESIZE) resize((int *)&vo_dwidth,(int *)&vo_dheight);
-    if(e&VO_EVENT_EXPOSE && paused) flip_page();
+			if(gl_handlekey(key)) {
+				XPutBackEvent(mDisplay, &Event);
+			}
+			break;
+		} else {
+			XPutBackEvent(mDisplay, &Event);
+			break;
+		}
+	}
+	int e=vo_x11_check_events(mDisplay);
+	if(e&VO_EVENT_RESIZE) resize((int *)&vo_dwidth,(int *)&vo_dheight);
+	if(e&VO_EVENT_EXPOSE && paused) flip_page();
 }
 
-static void draw_text(int x0,int y0, int w,int h, unsigned char* src, unsigned char *srca, int stride){
-	if(image_format == IMGFMT_RGB24){
-		vo_draw_alpha_rgb24(w,h,src,srca,stride,imagedata+3*(y0*image_width+x0),3*image_width);
-	} else if(image_format == IMGFMT_YV12){
-		if(use_ycrcb){
+static void draw_text(int x0,int y0, int w,int h, unsigned char* src, unsigned char *srca, int stride)
+{
+	if(image_format == IMGFMT_RGB24) {
+		vo_draw_alpha_rgb24(w, h, src, srca, stride,
+			imagedata+3*(y0*image_width+x0), 3*image_width);
+	} else if(image_format == IMGFMT_YV12) {
+		if(use_ycrcb) {
 			vo_draw_alpha_uyvy(w, h, src, srca, stride, imagedata+2*(y0*image_width+x0),2*image_width);
-		} else if(use_softcs){
+		} else if(use_softcs) {
 			vo_draw_alpha_rgb24(w, h, src, srca, stride, imagedata+3*(y0*image_width+x0), 3*image_width);
-		} else if(use_colormatrix || use_pixeltex){
-			if(use_rgb){
+		} else if(use_colormatrix || use_pixeltex) {
+			if(use_rgb) {
 				int y;
 				unsigned char *dstbase = imagedata+3*(y0*image_width+x0);
 
-				for(y = 0; y < h; y++){
+				for(y = 0; y < h; y++) {
 					register unsigned char *dst = dstbase;
 					register int x;
-					for(x = 0; x < w; x++){
-						if(srca[x]){
+					for(x = 0; x < w; x++) {
+						if(srca[x]) {
 							dst[0] = ((dst[0]*srca[x])>>8)+src[x];
 						}
 						dst += 3;
@@ -1537,11 +1510,11 @@ static void draw_text(int x0,int y0, int w,int h, unsigned char* src, unsigned c
 					srca += stride;
 					dstbase += (image_width*3);
 				}
-			} else if(use_rgba){
+			} else if(use_rgba) {
 				int y;
 				unsigned char *dstbase = imagedata+4*(y0*image_width+x0);
 
-				for(y = 0; y < h; y++){
+				for(y = 0; y < h; y++) {
 					register unsigned char *dst = dstbase;
 					register int x;
 					for(x = 0; x < w; x++){
@@ -1554,11 +1527,11 @@ static void draw_text(int x0,int y0, int w,int h, unsigned char* src, unsigned c
 					srca += stride;
 					dstbase += (image_width*4);
 				}
-			} else if(use_abgr){
+			} else if(use_abgr) {
 				int y;
 				unsigned char *dstbase = imagedata+4*(y0*image_width+x0);
 
-				for(y = 0; y < h; y++){
+				for(y = 0; y < h; y++) {
 					register unsigned char *dst = dstbase;
 					register int x;
 					for(x = 0; x < w; x++){
@@ -1657,14 +1630,14 @@ static int draw_slice(uint8_t *src[], int stride[], int w,int h,int x,int y)
 	int _y = y;
 	int dstoff = 0;
 
-//	printf("stride[0]=%d [1]=%d [2]=%d, src[0]%x [1]=%x [2]=%x w = %d h = %d\n", stride[0], stride[1], stride[2], src[0], src[1], src[2], w, h);
+//	printf("stride[0]=%d [1]=%d [2]=%d, src[0]%x [1]=%x [2]=%x w=%d h=%d iw=%d\n", stride[0], stride[1], stride[2], src[0], src[1], src[2], w, h, image_width);
 	if (skip_frame)
 	{
 		return 0;
 	}
 
-	if(image_format == IMGFMT_YV12){
-		if(use_ycrcb){
+	if(image_format == IMGFMT_YV12) {
+		if(use_ycrcb) {
 			uint32_t Y1;
 			uint32_t U, V;
 			uint32_t PY1, PY2;
@@ -1682,83 +1655,67 @@ static int draw_slice(uint8_t *src[], int stride[], int w,int h,int x,int y)
 
 			uint32_t width_diff = (stride[0]+(stride[0]-image_width))>>2;
 			uint32_t half_diff = (stride[1]>>2)-(image_width>>3);// (stride[1]+(stride[1]-(image_width>>1)))>>2;
-			uint32_t dest_diff = (image_width>>1)+((image_width&06)>>1);
+			uint32_t dest_diff = (image_width>>1);
 
-//printf("full_width=%d half_width=%d\n", width_diff, half_diff);
-			if(h == 16){
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-			} else if(h == 8){
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-					UNPACK_TO_UYVY
-			} else {
-				while (y < h)
-				{
-					UNPACK_TO_UYVY
-					y += 2;
-				}
+			if(h == 16) {
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+				UNPACK_TO_UYVY
+			} else for(y=0; y<h; y+=2) {
+				UNPACK_TO_UYVY
 			}
-		} else if(use_rgb){
+		} else if(use_rgb) {
 			dstoff = (image_width*3)*y;
 			uint32_t *dst_1= (uint32_t*)(imagedata + dstoff);
 			uint32_t *dst_2= dst_1 + ((image_width*3)>>2);
 			uint8_t *py_1= src[0];
-			uint8_t *py_2= py_1 + image_width;
+			uint8_t *py_2= py_1 + stride[0];
 			uint8_t *pu= src[1];
 			uint8_t *pv= src[2];
 			int U, V, Y1, Y2;
 			uint32_t acc1;
 			uint32_t h_size;
 
-			if(use_softcs){
+			uint32_t width_diff = (stride[0]+(stride[0]-image_width));
+			uint32_t half_diff = (stride[1])-(image_width>>1);
+			uint32_t dest_diff = ((image_width*3)>>2)+((image_width&06)>>2);
+
+			if(use_softcs) {
 				uint8_t *r, *g, *b;
 				uint32_t acc2;
 
-				if(h == 16){
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-				} else if(h == 8){
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-						UNPACK_TO_RGB
-				} else for(y=0; y<h; y+=2){
-						UNPACK_TO_RGB
+				if(h == 16) {
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+					UNPACK_TO_RGB
+				} else for(y=0; y<h; y+=2) {
+					UNPACK_TO_RGB
 				}
 			} else {
-				if(h == 16){
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-				} else if(h == 8){
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-						UNPACK_TO_YUV
-				} else for(y=0; y<h; y+=2){
-						UNPACK_TO_YUV
+				if(h == 16) {
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+					UNPACK_TO_YUV
+				} else for(y=0; y<h; y+=2) {
+					UNPACK_TO_YUV
 				}
 			}
-		} else if(use_abgr){
+		} else if(use_abgr) {
 			dstoff = (image_width*4)*y;
 			uint32_t *dst_1= (uint32_t*)(imagedata + dstoff);
 			uint32_t *dst_2= dst_1 + ((image_width*4)>>2);
@@ -1774,73 +1731,54 @@ static int draw_slice(uint8_t *src[], int stride[], int w,int h,int x,int y)
 				uint8_t *r, *g, *b;
 				uint32_t acc2;
 
-				for(y=0; y<h; y+=2){
+				for(y=0; y<h; y+=2) {
 					UNPACK_TO_ABGR
 				}
 			} else {
-				for(y=0; y<h; y+=2){
+				for(y=0; y<h; y+=2) {
 					UNPACK_TO_YUVA
 				}
 			}
-		} else if(use_rgba){
+		} else if(use_rgba) {
 			dstoff = (image_width*4)*y;
 			uint32_t *dst_1= (uint32_t*)(imagedata + dstoff);
 			uint32_t *dst_2= dst_1 + ((image_width*4)>>2);
 			uint8_t *py_1= src[0];
-			uint8_t *py_2= py_1 + image_width;
+			uint8_t *py_2= py_1 + stride[0];
 			uint8_t *pu= src[1];
 			uint8_t *pv= src[2];
 			int U, V, Y1, Y2;
 			uint32_t acc1;
 			uint32_t h_size;
 
-			if(h == 16){
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-			} else if(h == 8){
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-					UNPACK_TO_YUVA
-			} else for(y=0; y<h; y+=2){
-					UNPACK_TO_YUVA
+			if(h == 16) {
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+				UNPACK_TO_YUVA
+			} else for(y=0; y<h; y+=2) {
+				UNPACK_TO_YUVA
 			}
 		}
 
-		if(use_textures){
-		     if(!use_ycrcb) setupTextureDirtyArea(0, _y, image_width, h);
+		if(use_textures) {
+			if(!use_ycrcb) {
+				setupTextureDirtyArea(0, _y, image_width, h);
+			}
 		}
-
 	}
 	return 0;
 }
-/*
-static int draw_frame(uint8_t *src[])
+
+static int query_format(uint32_t format)
 {
-	if(image_format == IMGFMT_YV12){
-	} else {
-		imagedata = src[0];
-
-		if(use_drawpixels){
-		} else if(use_textures){
-			resetTexturePointers (imagedata);
-		     if(!use_ycrcb) setupTextureDirtyArea(0, 0, image_width, image_height);
-		}
-	}
-
-	return 0;
-}
-*/
-static int query_format(uint32_t format){
 	image_format = format;
 
-	switch(format){
+	switch(format) {
 	case IMGFMT_UYVY:
 		return VFCAP_CSP_SUPPORTED | VFCAP_CSP_SUPPORTED_BY_HW |
 			VFCAP_HWSCALE_UP | VFCAP_HWSCALE_DOWN ;
@@ -1857,19 +1795,19 @@ static int query_format(uint32_t format){
 
 static void uninit(void)
 {
-	if(use_async){
+	if(use_async) {
 		unsigned int asyncs[2];
 		asyncs[0] = async_marker;
 		asyncs[1] = 0;
-		if(async_first){
+		if(async_first) {
 			glFinishAsyncSGIX(asyncs);
 		}
 		glDisable(GL_ASYNC_DRAW_PIXELS_SGIX);
 		glDeleteAsyncMarkersSGIX(async_marker, 1);
 	}
 	glFinish();
-	if ( !vo_config_count ) return;
-  	if (texgrid) {
+	if( !vo_config_count ) return;
+  	if(texgrid) {
    		free(texgrid);
     	texgrid = NULL;
   	}
@@ -1902,7 +1840,7 @@ static int preinit(const char *arg)
 	force_softcs = 0;
 	force_rendertotex = 0;
 
-	if(arg){
+	if(arg) {
 		const char *parse_pos = &arg[0];
 		while (parse_pos[0] && !parse_err) {
 			if (strncmp (parse_pos, "textures", 8) == 0) {
@@ -1920,6 +1858,9 @@ static int preinit(const char *arg)
 			} else if (strncmp (parse_pos, "ycrcb", 5) == 0) {
 				parse_pos = &parse_pos[5];
 				force_ycrcb=1;
+			} else if (strncmp (parse_pos, "double", 6) == 0) {
+				parse_pos = &parse_pos[6];
+				double_buffer=1;
 			} else if (strncmp (parse_pos, "nodouble", 8) == 0) {
 				parse_pos = &parse_pos[8];
 				double_buffer=0;
@@ -1944,6 +1885,9 @@ static int preinit(const char *arg)
 			} else if (strncmp (parse_pos, "skip2", 5) == 0) {
 				parse_pos = &parse_pos[5];
 				frame_skip = 2;
+			} else if (strncmp (parse_pos, "skip3", 5) == 0) {
+				parse_pos = &parse_pos[5];
+				frame_skip = 3;
 			} else if (strncmp (parse_pos, "skip4", 5) == 0) {
 				parse_pos = &parse_pos[5];
 				frame_skip = 4;
@@ -1954,24 +1898,31 @@ static int preinit(const char *arg)
             	"\noptions accepted by vo_sgi are:\n\n"
             	"\ttextures:	force drawing via textures\n"
 				"\tdrawpixels:	force drawing via glDrawPixels\n"
+				"\tdouble:		force double buffered visual\n"
 				"\tnodouble:	force single buffered visual\n"
 				"\tsoftcs:		force Software colorspace conversion\n"
 				"\tpixeltex:	force SGIX/SGIS_pixel_texture colorspace conversion (Impact/VPRO only)\n"
 				"\tcolormatrix:	force SGI_color_matrix for hardware colorspace conversion\n"
 				"\tycrcb:		force YCrCb hardware colorspace conversion (O2 only)\n"
-				"\trgb:		force rgb\n"
+				"\trgb:			force rgb\n"
 				"\trgba:		force rgba\n"
 				"\tabgr:		force abgr\n"
 				"\tasync:		force SGIX_async_pixel for asynchronous glDrawPixels drawing (VPRO only)\n"
+				"\tskip[1-4]:	skip output of 1-4 frames per frame displayed\n"
             	"\n" );
 				return -1;
 			}
-			if (parse_pos[0] == ':') parse_pos = &parse_pos[1];
-			else if (parse_pos[0]) parse_err = 1;
+			if(parse_pos[0] == ':') {
+				parse_pos = &parse_pos[1];
+			} else if(parse_pos[0]) {
+				parse_err = 1;
+			}
 		}
 	}
 
-	if( !vo_init() ) return -1; // Can't open X11
+	if(!vo_init()) {
+		return -1; // Can't open X11
+	}
 
 	return 0;
 }
@@ -1979,7 +1930,7 @@ static int preinit(const char *arg)
 
 static int control(uint32_t request, void *data)
 {
-	switch(request){
+	switch(request) {
 	case VOCTRL_PAUSE:
 		return (paused=1);
 	case VOCTRL_RESUME:

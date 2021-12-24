@@ -2,51 +2,51 @@
 /*              UNPACK YV12 DATA to UYVY              */
 ////////////////////////////////////////////////////////
 #define UNPACK_TO_UYVY \
-				h_size = 1+((image_width)>>3);				\
-				while (--h_size) {							\
-					U = *pu; V = *pv;						\
-					PY1 = py_1[0]; PY2 = py_2[0];			\
-					acc1 = (U&0xff000000)|((V>>16)&0xff00);	\
+			h_size = 1+((image_width)>>3);				\
+			while (--h_size) {							\
+				U = *pu; V = *pv;						\
+				PY1 = py_1[0]; PY2 = py_2[0];			\
+				acc1 = (U&0xff000000)|((V>>16)&0xff00);	\
 \
-					Y1 = (PY1>>8)&0x00ff0000;				\
-					dst_1[0] = acc1|(Y1)|((PY1>>16)&0x00ff);\
-					Y1 = (PY2>>8)&0x00ff0000;				\
-					dst_2[0] = acc1|(Y1)|((PY2>>16)&0x00ff);\
+				Y1 = (PY1>>8)&0x00ff0000;				\
+				dst_1[0] = acc1|(Y1)|((PY1>>16)&0x00ff);\
+				Y1 = (PY2>>8)&0x00ff0000;				\
+				dst_2[0] = acc1|(Y1)|((PY2>>16)&0x00ff);\
 \
-					U <<= 8;								\
-					acc1 = (U&0xff000000)|((V>>8)&0xff00);	\
+				U <<= 8;								\
+				acc1 = (U&0xff000000)|((V>>8)&0xff00);	\
 \
-					Y1 = (PY1<<8)&0x00ff0000;				\
-					dst_1[1] = acc1|(Y1)|(PY1&0x00ff);		\
-					Y1 = (PY2<<8)&0x00ff0000;				\
-					dst_2[1] = acc1|(Y1)|(PY2&0x00ff);		\
+				Y1 = (PY1<<8)&0x00ff0000;				\
+				dst_1[1] = acc1|(Y1)|(PY1&0x00ff);		\
+				Y1 = (PY2<<8)&0x00ff0000;				\
+				dst_2[1] = acc1|(Y1)|(PY2&0x00ff);		\
 \
-					U <<= 8;								\
-					acc1 = (U&0xff000000)|(V&0xff00);		\
+				U <<= 8;								\
+				acc1 = (U&0xff000000)|(V&0xff00);		\
 \
-					PY1 = py_1[1]; PY2 = py_2[1];			\
-					Y1 = (PY1>>8)&0x00ff0000;				\
-					dst_1[2] = acc1|(Y1)|((PY1>>16)&0x00ff);\
-					Y1 = (PY2>>8)&0x00ff0000;				\
-					dst_2[2] = acc1|(Y1)|((PY2>>16)&0x00ff);\
+				PY1 = py_1[1]; PY2 = py_2[1];			\
+				Y1 = (PY1>>8)&0x00ff0000;				\
+				dst_1[2] = acc1|(Y1)|((PY1>>16)&0x00ff);\
+				Y1 = (PY2>>8)&0x00ff0000;				\
+				dst_2[2] = acc1|(Y1)|((PY2>>16)&0x00ff);\
 \
-					acc1 = (U<<8)|((V<<8)&0xff00);			\
+				acc1 = (U<<8)|((V<<8)&0xff00);			\
 \
-					Y1 = (PY1<<8)&0x00ff0000;				\
-					dst_1[3] = acc1|(Y1)|(PY1&0x00ff);		\
-					Y1 = (PY2<<8)&0x00ff0000;				\
-					dst_2[3] = acc1|(Y1)|(PY2&0x00ff);		\
+				Y1 = (PY1<<8)&0x00ff0000;				\
+				dst_1[3] = acc1|(Y1)|(PY1&0x00ff);		\
+				Y1 = (PY2<<8)&0x00ff0000;				\
+				dst_2[3] = acc1|(Y1)|(PY2&0x00ff);		\
 \
-					pu++;									\
-					pv++;									\
-					py_1 += 2;								\
-					py_2 += 2;								\
-					dst_1 += 4;								\
-					dst_2 += 4;								\
-				}\
-				dst_1 += dest_diff; dst_2 += dest_diff;		\
-				py_1 += width_diff; py_2 += width_diff; 	\
-				pu += half_diff; pv += half_diff;
+				pu++;									\
+				pv++;									\
+				py_1 += 2;								\
+				py_2 += 2;								\
+				dst_1 += 4;								\
+				dst_2 += 4;								\
+			}\
+			dst_1 += dest_diff; dst_2 += dest_diff;		\
+			py_1 += width_diff; py_2 += width_diff; 	\
+			pu += half_diff; pv += half_diff;
 
 
 
@@ -54,8 +54,8 @@
 /*              UNPACK YV12 DATA to YUV               */
 ////////////////////////////////////////////////////////
 #define UNPACK_TO_YUV \
-			h_size = image_width>>3;\
-			while (h_size--) {\
+			h_size = 1+((image_width)>>3);				\
+			while (--h_size) {\
 				U = pu[0];\
 				V = pv[0];\
 				Y1 = py_1[0];\
@@ -223,9 +223,9 @@
 /*              UNPACK YV12 DATA to RGB               */
 ////////////////////////////////////////////////////////
 #define UNPACK_TO_RGB \
-		h_size= image_width>>3;\
+		h_size= 1+(image_width>>3);\
 \
-		while (h_size--) {\
+		while (--h_size) {\
 			U = pu[0];\
 			V = pv[0];\
 			r = (uint8_t*)table_rV[V];\
@@ -333,10 +333,14 @@
 			dst_1 += 6;\
 			dst_2 += 6;\
 		}\
-		dst_1 += ((image_width*3)>>2);\
-		dst_2 += ((image_width*3)>>2);\
-		py_1 += image_width;\
-		py_2 += image_width;
+		dst_1 += dest_diff; dst_2 += dest_diff;		\
+		py_1 += width_diff; py_2 += width_diff; 	\
+		pu += half_diff; pv += half_diff;
+
+//dst_1 += ((image_width*3)>>2);\
+//dst_2 += ((image_width*3)>>2);\
+//py_1 += image_width;\
+//py_2 += image_width;
 
 
 
